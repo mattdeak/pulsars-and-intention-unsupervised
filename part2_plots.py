@@ -26,7 +26,56 @@ dataset = "pulsar"
 #
 ica_components_map = {"pulsar": 4, "intention": 9}  # From analysis
 rp_components_map = {"intention": 20}
-lle_components_map = {"intention":6,  "pulsar": 3}
+lle_components_map = {"intention": 6, "pulsar": 3}
+
+
+def plot_ICA_components(dataset):
+    if dataset == "intention":
+        X, y = load_intention()
+        cols_to_use = [
+            "Administrative",
+            "Administrative_Duration",
+            "Informational",
+            "Informational_Duration",
+            "ProductRelated",
+            "ProductRelated_Duration",
+            "BounceRates",
+            "ExitRates",
+            "PageValues",
+        ]
+    else:
+        X, y = load_pulsar()
+        cols_to_use = X.columns
+
+    n_components = ica_components_map[dataset]
+    transformer_name = f"{dataset}_ICA{n_components}_transformer.pkl"
+    folder = os.path.join("output", "part2", "ICA")
+
+    transformer = get_transformer(transformer_name, folder)
+    components = pd.DataFrame(transformer.components_, columns=X.columns)
+    components = components[cols_to_use]
+    rows = int(np.sqrt(n_components))
+
+    fig = plt.figure(figsize=(10, 10))
+    plt.rcParams.update({'font.size':5})
+    for i in range(n_components):
+        ax = fig.add_subplot(int(f"{rows}{rows}{i+1}"))
+        ax.set_title(f'Component {i+1}')
+        components.loc[i, :].plot(kind="bar", ax=ax)
+
+        # Turn off ticks
+        #
+        if n_components - i > rows:
+            ax.set_xticklabels([])
+            for tic in ax.xaxis.get_major_ticks():
+                tic.tick1On = tic.tick2On = False
+    plt.subplots_adjust(wspace=1)
+    plt.rcParams.update({'font.size':14})
+    fig.suptitle('ICA Components')
+
+    plot_dir = os.path.join('plots','part2',f'ica_components{dataset}.png')
+    plt.savefig(plot_dir)
+    plt.close()
 
 
 def get_transformer(filename, folder):
@@ -122,8 +171,9 @@ def plot_principal_axes(dataset):
         ]
 
     index = [f"Component {i+1}" for i in range(X.shape[1])]
-    pca_data = get_transformed_data(dataset, "PCA", data_dir)
-    pca = get_transformer(dataset, "PCA", data_dir)
+    pca_transformer_name = f"{dataset}_PCA_transformer.pkl"
+    pca_data = get_transformed_data(dataset, "PCA", pca_dir)
+    pca = get_transformer(pca_transformer_name, pca_dir)
     components = pd.DataFrame(pca.components_, columns=X.columns, index=index)
 
     components = components[cols_to_use]
@@ -134,9 +184,6 @@ def plot_principal_axes(dataset):
     ax.set_title("Principal Axes in Feature Space resulting from PCA Decomposition")
     plt.savefig(os.path.join(part2_plot_dir, f"PrincipalAxes{dataset}.png"))
     plt.close()
-
-
-ica_folder = "output/part2/ICA"
 
 
 def extract_number(string, transformer):
@@ -209,16 +256,16 @@ def plot_ica_kurtoses(dataset):
     plt.close()
 
 
-def generate_tsnes(dataset, transformer='ICA'):
+def generate_tsnes(dataset, transformer="ICA"):
     print(f"Generating TSNE data for {dataset} on transformer {transformer}")
-    if transformer == 'ICA':
+    if transformer == "ICA":
         components = ica_components_map[dataset]
         data_filepath = os.path.join(ica_dir, f"{dataset}_ICA{components}.npy")
-    elif transformer == 'LLE':
+    elif transformer == "LLE":
         components = lle_components_map[dataset]
         data_filepath = os.path.join(lle_dir, f"{dataset}_LLE{components}.npy")
     else:
-        raise NotImplemented('Transformer not implemented. Must be ICA or LLE')
+        raise NotImplemented("Transformer not implemented. Must be ICA or LLE")
 
     raw_filepath = data_filepath.replace(".npy", "")
     tsne2 = TSNE(n_components=2)
@@ -275,6 +322,7 @@ def plot_ica_tsnes(dataset):
     plt.savefig(os.path.join(part2_plot_dir, f"TSNE_ICA{dataset}.png"))
     plt.close()
 
+
 def plot_lle_tsnes(dataset):
     components = lle_components_map[dataset]
     filepath = os.path.join(lle_dir, f"{dataset}_LLE{components}.npy")
@@ -309,6 +357,7 @@ def plot_lle_tsnes(dataset):
     ax2.set_zlabel("TSNE Dimension 3")
     plt.savefig(os.path.join(part2_plot_dir, f"TSNE_LLE{dataset}.png"))
     plt.close()
+
 
 def get_RP_reconstruction_errors(dataset):
     X = get_true_data(dataset)
@@ -418,11 +467,13 @@ def plot_procrustes_disparities(dataset):
 
 
 if __name__ == "__main__":
-    for dataset in ['pulsar','intention']:
-        plot_pca_points(dataset)
-        plot_pca_explained_variance(dataset)
-        plot_ica_kurtoses(dataset)
-        plot_ica_tsnes(dataset)
-        plot_reconstruction_error(dataset)
-        plot_procrustes_disparities(dataset)
-        plot_lle_tsnes(dataset)
+    pass
+    # for dataset in ['pulsar','intention']:
+    #     plot_pca_points(dataset)
+    #     plot_pca_explained_variance(dataset)
+    #     plot_principal_axes(dataset)
+    #     plot_ica_kurtoses(dataset)
+    #     plot_ica_tsnes(dataset)
+    #     plot_reconstruction_error(dataset)
+    #     plot_procrustes_disparities(dataset)
+    #     plot_lle_tsnes(dataset)

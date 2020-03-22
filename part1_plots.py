@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
 from utils import get_labels, get_true_data, load_pulsar, load_intention
@@ -6,6 +7,7 @@ from sklearn.metrics import accuracy_score, f1_score
 import numpy as np
 import json
 import os
+from sklearn.manifold import TSNE
 
 # datafile = 'output/exp1_pulsar_data.json'
 RANDOM_STATE = 1
@@ -28,7 +30,7 @@ def get_stats(data):
 def save_clustering_plots(datafile, prefix, plot_dir="plots/part1"):
     with open(datafile, "r") as f:
         data = json.load(f)
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+    fig, ax1 = plt.subplots(1, 1, figsize=(10, 5))
     plt.subplots_adjust(hspace=0.001)
 
     kmeans_data = {k: v for k, v in data["kmeans"].items()}
@@ -39,25 +41,15 @@ def save_clustering_plots(datafile, prefix, plot_dir="plots/part1"):
     em_silhouette, em_sse, em_avg_entropy, _, _, _ = get_stats(em_data)
 
     (kmeans,) = ax1.plot(xs, kmeans_silhoutte)
-    ax2.plot(xs, kmeans_sse)
-    ax3.plot(xs, kmeans_avg_entropy)
 
-    ax2_em = ax2.twinx()
     (em,) = ax1.plot(xs, em_silhouette, c="green")
-    ax2_em.plot(xs, em_sse, c="green")
-    ax3.plot(xs, em_avg_entropy, c="green")
 
-    ax3.set_xlabel("# of Clusters")
+    ax1.set_xlabel("# of Clusters")
     ax1.set_ylabel("Silhouette Score")
-    ax2.set_ylabel("SSE")
-    ax2_em.set_ylabel("Log-Likelihood")
-    ax3.set_ylabel("Weighted Average Entropy")
 
     ax1.set_xlim((0, 28))
     ax1.legend((kmeans, em), ("K-Means", "EM"))
 
-    # for ax in [ax1, ax2, ax3]:
-    #     ax.set_xlim((2, 30))
     ax1.set_title("Cluster Search")
     outpath = os.path.join(plot_dir, f"{prefix}_ClusterSearch.png")
     plt.savefig(outpath)
@@ -109,7 +101,9 @@ def print_evaluation_stats(datafile, kmeans_clusters=2, em_clusters=2):
     kmeans_data = {k: v for k, v in data["kmeans"].items()}
     em_data = {k: v for k, v in data["em"].items()}
 
-    for clusterer, data, clusters in zip(["K-Means", "EM"], [kmeans_data, em_data], [kmeans_clusters, em_clusters]):
+    for clusterer, data, clusters in zip(
+        ["K-Means", "EM"], [kmeans_data, em_data], [kmeans_clusters, em_clusters]
+    ):
         print(f"Evaluation Stats for Clusterer {clusterer} with {clusters} clusters")
         _, _, _, h, c, v = get_stats(data)
         print(f"Homogeneity: {h[clusters]:.4f}")
@@ -151,6 +145,134 @@ def print_clustering_stats(X, y):
     print()
 
 
+def save_cluster_descriptions(
+    data_loader, output_dir, file_prefix, kmeans_clusters=2, em_clusters=2
+):
+    kmeans = KMeans(kmeans_clusters, random_state=1)
+    em = GaussianMixture(n_components=em_clusters, random_state=1)
+
+    tsne2 = TSNE(n_components=2)
+
+    X, y = data_loader()
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+
+    kmeans.fit(X)
+    em.fit(X)
+
+    reduced = tsne2.fit_transform(X)
+
+    kmeans_clusters = kmeans.predict(X)
+    em_probs = em.predict_proba(X)[:, 0]
+
+    class0_ix = y == 0
+    class1_ix = y == 1
+
+    class0_reduced = reduced[class0_ix]
+    class0_y = y[class0_ix]
+    kmeans_clusters_class0 = kmeans_clusters[class0_ix]
+    em_probs_class0 = em_probs[class0_ix]
+    class1_reduced = reduced[class1_ix]
+    class1_y = y[class1_ix]
+    kmeans_clusters_class1 = kmeans_clusters[class1_ix]
+    em_probs_class1 = em_probs[class1_ix]
+
+    ax1.scatter(
+        class0_reduced[:, 0],
+        class0_reduced[:, 1],
+        c=kmeans_clusters_class0,
+        marker="_",
+        alpha=0.3,
+    )
+    ax1.scatter(
+        class1_reduced[:, 0],
+        class1_reduced[:, 1],
+        c=kmeans_clusters_class1,
+        marker="+",
+        alpha=0.3,
+    )
+    ax2.scatter(
+        class0_reduced[:, 0],
+        class0_reduced[:, 1],
+        c=em_probs_class0,
+        marker="_",
+        alpha=0.3,
+    )
+    ax2.scatter(
+        class1_reduced[:, 0],
+        class1_reduced[:, 1],
+        c=em_probs_class1,
+        marker="+",
+        alpha=0.3,
+    )
+
+    ax1.set_xlabel("t-SNE Dimension 1")
+    ax1.set_ylabel("t-SNE Dimension 2")
+    ax2.set_xlabel("t-SNE Dimension 1")
+    ax2.set_ylabel("t-SNE Dimension 2")
+    ax1.set_title("K-Means Cluster Projection")
+    ax2.set_title("EM Cluster Projection")
+
+    plt.savefig(os.path.join(output_dir, f"{file_prefix}_clusterprojections.png"))
+    plt.close()
+
+    return X, kmeans_clusters, em_probs
+
+
+def plot_cluster_means(
+    data_loader,
+    output_dir,
+    file_prefix,
+    kmeans_clusters=2,
+    em_clusters=2,
+):
+
+    X, y = data_loader()
+    if data_loader is load_intention:
+        X_plot = X[
+            [
+                "Administrative",
+                "Administrative_Duration",
+                "Informational",
+                "Informational_Duration",
+                "ProductRelated",
+                "ProductRelated_Duration",
+                "BounceRates",
+                "ExitRates",
+                "PageValues",
+            ]
+        ]
+
+    else:
+        X_plot = X
+
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    kmeans = KMeans(kmeans_clusters, random_state=1)
+    em = GaussianMixture(n_components=em_clusters, random_state=1)
+    kmeans.fit(X)
+    em.fit(X)
+
+    kmeans_df = pd.DataFrame(kmeans.cluster_centers_, columns=X.columns)
+    kmeans_df = kmeans_df[X_plot.columns]
+    em_df = pd.DataFrame(em.means_, columns=X.columns)
+    em_df = em_df[X_plot.columns]
+
+    kmeans_df.plot(kind="bar", ax=ax1)
+    em_df.plot(kind="bar", ax=ax2)
+
+    ax1.set_ylabel("Mean Value")
+    ax2.set_ylabel("Mean Value")
+
+    ax1.set_xlabel("Cluster")
+    ax2.set_xlabel("Cluster")
+
+    ax1.set_title('K-Means Cluster Centers')
+    ax2.set_title('EM Cluster Centers')
+    ax1.get_legend().remove()
+    plt.savefig(os.path.join(output_dir, f"{file_prefix}_clusterprojections.png"))
+    plt.close()
+
+
+
 if __name__ == "__main__":
     plot_dir = os.path.join("plots", "part1")
     intention_datafile = os.path.join("output", "part1", "exp1_intention_data.json")
@@ -159,13 +281,16 @@ if __name__ == "__main__":
     save_clustering_plots(pulsar_datafile, "pulsar")
     save_cluster_evaluations_plots(intention_datafile, "intention", plot_dir)
     save_cluster_evaluations_plots(pulsar_datafile, "pulsar", plot_dir)
+    plot_cluster_means(load_intention, plot_dir, 'intention')
+    plot_cluster_means(load_pulsar, plot_dir, 'pulsar')
+    
     print("Intention Evaluation")
     print_evaluation_stats(intention_datafile)
 
     print("Pulsar Evaluation")
     print_evaluation_stats(pulsar_datafile)
 
-    # intention_X, intention_y = load_intention()
-    # pulsar_X, pulsar_y = load_pulsar()
-    # print_clustering_stats(intention_X, intention_y)
-    # print_clustering_stats(pulsar_X, pulsar_y)
+    # # intention_X, intention_y = load_intention()
+    # # pulsar_X, pulsar_y = load_pulsar()
+    # # print_clustering_stats(intention_X, intention_y)
+    # # print_clustering_stats(pulsar_X, pulsar_y)
