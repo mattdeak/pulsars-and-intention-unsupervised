@@ -6,12 +6,14 @@ from utils import load_intention, load_pulsar
 from sklearn.metrics import silhouette_score
 from collections import defaultdict
 from scipy.stats import entropy
+from sklearn.metrics import homogeneity_score, completeness_score, v_measure_score
 import json
 import os
 
 OUTPUT_DIR = "output"
 RANDOM_STATE = 1
 
+CLUSTER_MAP = {'part1_kmeans': 2, 'part1_em': 2}
 
 
 def get_weighted_average_entropy(y, cluster_indices):
@@ -55,6 +57,24 @@ def run_clustering_experiment(X, y):
 
         results["kmeans"][i]["score"] = kmeans_score
         results["em"][i]["score"] = em_score
+
+        kmeans_homogeneity = homogeneity_score(y, kmeans_preds)
+        em_homogeneity = homogeneity_score(y, em_preds)
+
+        results["kmeans"][i]["homogeneity"] = kmeans_homogeneity
+        results["em"][i]["homogeneity"] = em_homogeneity
+
+        kmeans_completeness = completeness_score(y, kmeans_preds)
+        em_completeness = completeness_score(y, em_preds)
+
+        results["kmeans"][i]["completeness"] = kmeans_completeness
+        results["em"][i]["completeness"] = em_completeness
+        
+        kmeans_v_measure = v_measure_score(y, kmeans_preds)
+        em_v_measure = v_measure_score(y, em_preds)
+
+        results["kmeans"][i]["v_measure"] = kmeans_v_measure
+        results["em"][i]["v_measure"] = em_v_measure
 
     return results
 

@@ -82,21 +82,6 @@ def save_all_transformations(data, file_prefix, output_dir="output/part2", ica_m
     # run_LLE_collection(data, file_prefix, lle_dir, max_component_ratio=lle_max_component_ratio)
 
 
-def get_transformed_data(X, info_keep=0.9, dims=None):
-    assert (
-        info_keep is not None or dims is not None
-    ), "Must specify either info_keep or dims"
-    assert not (
-        info_keep is not None and dims is not None
-    ), "Can't use both info_keep or dims"
-
-    pca = PCA()
-    transformed = pca.fit_transform(X)
-
-    if info_keep:
-        cumvar = np.cumsum(pca.explained_variance_ratio_)
-        pca_dims = len(cumvar[cumvar < info_keep])
-        pca_transformed = transformed[:, :pca_dims]
 
 
 if __name__ == "__main__":
