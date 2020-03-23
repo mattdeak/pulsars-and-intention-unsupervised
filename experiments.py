@@ -14,6 +14,7 @@ from utils import (
     load_pulsar_LLE_reduced,
 )
 import os
+from nn import tune_part5networks, tune_part4networks, get_all_evaluations, print_best_params, print_best_params_part5, evaluate_part5networks
 
 OUTPUT_DIR = "output"
 
@@ -123,15 +124,23 @@ def part3(intention=True, pulsar=True, transformers=["PCA", "ICA", "RP", "LLE"])
 
 def part4():
     part4_dir = os.path.join(OUTPUT_DIR, "part4")
-    pass
+    tune_part4networks()
+    results = get_all_evaluations()
+    print_best_params()
+    print(results)
 
 
 def part5():
     part5_dir = os.path.join(OUTPUT_DIR, "part5")
-    pass
+    tune_part5networks()
+    print_best_params_part5()
+    results = evaluate_part5networks()
+    print(results)
 
 
 if __name__ == "__main__":
-    # part1()
-    # part2(intention=True, pulsar=True)
+    part1()
+    part2(intention=True, pulsar=True)
     part3(intention=True, pulsar=True)
+    part4()
+    part5()

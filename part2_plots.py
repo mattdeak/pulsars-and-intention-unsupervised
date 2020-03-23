@@ -57,10 +57,10 @@ def plot_ICA_components(dataset):
     rows = int(np.sqrt(n_components))
 
     fig = plt.figure(figsize=(10, 10))
-    plt.rcParams.update({'font.size':5})
+    plt.rcParams.update({"font.size": 5})
     for i in range(n_components):
         ax = fig.add_subplot(int(f"{rows}{rows}{i+1}"))
-        ax.set_title(f'Component {i+1}')
+        ax.set_title(f"Component {i+1}")
         components.loc[i, :].plot(kind="bar", ax=ax)
 
         # Turn off ticks
@@ -70,10 +70,10 @@ def plot_ICA_components(dataset):
             for tic in ax.xaxis.get_major_ticks():
                 tic.tick1On = tic.tick2On = False
     plt.subplots_adjust(wspace=1)
-    plt.rcParams.update({'font.size':14})
-    fig.suptitle('ICA Components')
+    plt.rcParams.update({"font.size": 14})
+    fig.suptitle("ICA Components")
 
-    plot_dir = os.path.join('plots','part2',f'ica_components{dataset}.png')
+    plot_dir = os.path.join("plots", "part2", f"ica_components{dataset}.png")
     plt.savefig(plot_dir)
     plt.close()
 
@@ -467,13 +467,13 @@ def plot_procrustes_disparities(dataset):
 
 
 if __name__ == "__main__":
-    pass
-    # for dataset in ['pulsar','intention']:
-    #     plot_pca_points(dataset)
-    #     plot_pca_explained_variance(dataset)
-    #     plot_principal_axes(dataset)
-    #     plot_ica_kurtoses(dataset)
-    #     plot_ica_tsnes(dataset)
-    #     plot_reconstruction_error(dataset)
-    #     plot_procrustes_disparities(dataset)
-    #     plot_lle_tsnes(dataset)
+    print('Generating Part 2 Plots')
+    for dataset in ['pulsar','intention']:
+        plot_pca_points(dataset)
+        plot_pca_explained_variance(dataset)
+        plot_principal_axes(dataset)
+        plot_ica_kurtoses(dataset)
+        plot_ica_tsnes(dataset)
+        plot_reconstruction_error(dataset)
+        plot_procrustes_disparities(dataset)
+        plot_lle_tsnes(dataset)

@@ -289,8 +289,3 @@ if __name__ == "__main__":
 
     print("Pulsar Evaluation")
     print_evaluation_stats(pulsar_datafile)
-
-    # # intention_X, intention_y = load_intention()
-    # # pulsar_X, pulsar_y = load_pulsar()
-    # # print_clustering_stats(intention_X, intention_y)
-    # # print_clustering_stats(pulsar_X, pulsar_y)

@@ -112,124 +112,127 @@ def plot_cluster_means(
 
 # Pulsar LLE
 
-
-# Intention PCA
-intention_pca, y_intention = load_intention_PCA_reduced()
-em = GaussianMixture(2, random_state=1)
-
-
-pulsar_lle, y_pulsar = load_pulsar_LLE_reduced()
-kmeans = KMeans(2, random_state=1)
-
-em.fit(intention_pca)
-kmeans.fit(pulsar_lle)
-
-kmeans_clusters = kmeans.predict(pulsar_lle)
-em_probs = em.predict_proba(intention_pca)[:, 0]
+def main():
+    print("Generating Part3 Plots")
+    # Intention PCA
+    intention_pca, y_intention = load_intention_PCA_reduced()
+    em = GaussianMixture(2, random_state=1)
 
 
-fig = plt.figure(figsize=(10,8))
-ax1 = fig.add_subplot(221, projection='3d')
-ax2 = fig.add_subplot(222, projection='3d')
-ax3 = fig.add_subplot(223, projection='3d')
-ax4 = fig.add_subplot(224, projection='3d')
-ax1.scatter(intention_pca[:, 0], intention_pca[:, 1], zs=intention_pca[:, 2], c=1-em_probs, alpha=0.3)
-ax2.scatter(pulsar_lle[:, 0], pulsar_lle[:, 1], zs=pulsar_lle[:, 2], c=1-kmeans_clusters, alpha=0.3)
-ax3.scatter(intention_pca[:, 0], intention_pca[:, 1], zs=intention_pca[:, 2], c=y_intention, alpha=0.3)
-ax4.scatter(pulsar_lle[:, 0], pulsar_lle[:, 1], zs=pulsar_lle[:, 2], c=y_pulsar, alpha=0.3)
+    pulsar_lle, y_pulsar = load_pulsar_LLE_reduced()
+    kmeans = KMeans(2, random_state=1)
 
-ax1.set_xlabel('PCA Dimension 1')
-ax1.set_ylabel('PCA Dimension 2')
-ax1.set_zlabel('PCA Dimension 3')
-ax2.set_xlabel('LLE Dimension 1')
-ax2.set_ylabel('LLE Dimension 2')
-ax2.set_zlabel('LLE Dimension 3')
-ax3.set_xlabel('PCA Dimension 1')
-ax3.set_ylabel('PCA Dimension 2')
-ax3.set_zlabel('PCA Dimension 3')
-ax4.set_xlabel('LLE Dimension 1')
-ax4.set_ylabel('LLE Dimension 2')
-ax4.set_zlabel('LLE Dimension 3')
+    em.fit(intention_pca)
+    kmeans.fit(pulsar_lle)
 
-ax1.set_title('EM-Predicted Clusters on PCA')
-ax2.set_title('K-Means Predicted Clusters on LLE')
-
-ax3.set_title('True Labels in PCA Embedding')
-ax4.set_title('True Labels in LLE Embedding')
-
-plot_dir = os.path.join('plots','part3')
-plt.savefig(os.path.join(plot_dir, 'BestClustering.png'))
-plt.close()
+    kmeans_clusters = kmeans.predict(pulsar_lle)
+    em_probs = em.predict_proba(intention_pca)[:, 0]
 
 
+    fig = plt.figure(figsize=(10,8))
+    ax1 = fig.add_subplot(221, projection='3d')
+    ax2 = fig.add_subplot(222, projection='3d')
+    ax3 = fig.add_subplot(223, projection='3d')
+    ax4 = fig.add_subplot(224, projection='3d')
+    ax1.scatter(intention_pca[:, 0], intention_pca[:, 1], zs=intention_pca[:, 2], c=1-em_probs, alpha=0.3)
+    ax2.scatter(pulsar_lle[:, 0], pulsar_lle[:, 1], zs=pulsar_lle[:, 2], c=1-kmeans_clusters, alpha=0.3)
+    ax3.scatter(intention_pca[:, 0], intention_pca[:, 1], zs=intention_pca[:, 2], c=y_intention, alpha=0.3)
+    ax4.scatter(pulsar_lle[:, 0], pulsar_lle[:, 1], zs=pulsar_lle[:, 2], c=y_pulsar, alpha=0.3)
 
-# Clustering Results
-# intention_pca_datafile = get_datafile_path('intention','pca')
-# intention_ica_datafile = get_datafile_path('intention','ica')
-# intention_rp_datafile = get_datafile_path('intention','rp')
-# intention_lle_datafile = get_datafile_path('intention','lle')
-# pulsar_pca_datafile = get_datafile_path('pulsar','pca')
-# pulsar_ica_datafile = get_datafile_path('pulsar','ica')
-# pulsar_rp_datafile = get_datafile_path('pulsar','rp')
-# pulsar_lle_datafile = get_datafile_path('pulsar','lle')
+    ax1.set_xlabel('PCA Dimension 1')
+    ax1.set_ylabel('PCA Dimension 2')
+    ax1.set_zlabel('PCA Dimension 3')
+    ax2.set_xlabel('LLE Dimension 1')
+    ax2.set_ylabel('LLE Dimension 2')
+    ax2.set_zlabel('LLE Dimension 3')
+    ax3.set_xlabel('PCA Dimension 1')
+    ax3.set_ylabel('PCA Dimension 2')
+    ax3.set_zlabel('PCA Dimension 3')
+    ax4.set_xlabel('LLE Dimension 1')
+    ax4.set_ylabel('LLE Dimension 2')
+    ax4.set_zlabel('LLE Dimension 3')
 
-# save_clustering_plots(intention_pca_datafile, 'intention_pca', plot_dir)
-# save_clustering_plots(intention_ica_datafile, 'intention_ica', plot_dir)
-# save_clustering_plots(intention_rp_datafile, 'intention_rp', plot_dir)
-# save_clustering_plots(intention_lle_datafile, 'intention_lle', plot_dir)
+    ax1.set_title('EM-Predicted Clusters on PCA')
+    ax2.set_title('K-Means Predicted Clusters on LLE')
 
-# save_clustering_plots(pulsar_pca_datafile, 'pulsar_pca', plot_dir)
-# save_clustering_plots(pulsar_ica_datafile, 'pulsar_ica', plot_dir)
-# save_clustering_plots(pulsar_rp_datafile, 'pulsar_rp', plot_dir)
-# save_clustering_plots(pulsar_lle_datafile, 'pulsar_lle', plot_dir)
+    ax3.set_title('True Labels in PCA Embedding')
+    ax4.set_title('True Labels in LLE Embedding')
 
-
-# print('Intention pca results')
-# print_evaluation_stats(intention_pca_datafile)
-# print()
-
-# print('Intention ica results')
-# print_evaluation_stats(intention_ica_datafile, kmeans_clusters=3)
-# print()
-
-# print('Intention rp results')
-# print_evaluation_stats(intention_rp_datafile)
-# print()
-
-# print('Intention lle results')
-# print_evaluation_stats(intention_lle_datafile)
-# print()
-
-# print('pulsar pca results')
-# print_evaluation_stats(pulsar_pca_datafile)
-# print()
-
-# print('pulsar ica results')
-# print_evaluation_stats(pulsar_ica_datafile)
-# print()
-
-# print('pulsar rp results')
-# print_evaluation_stats(pulsar_rp_datafile)
-# print()
-
-# print('pulsar lle results')
-# print_evaluation_stats(pulsar_lle_datafile)
-# print()
+    plot_dir = os.path.join('plots','part3')
+    plt.savefig(os.path.join(plot_dir, 'BestClustering.png'))
+    plt.close()
 
 
-# pulsar_PCA_X, pulsar_PCA_y = load_pulsar_PCA_reduced()
-# intention_PCA_X, intention_PCA_y = load_intention_PCA_reduced()
 
-# pulsar_ICA_X, pulsar_ICA_y = load_pulsar_ICA_reduced()
-# intention_ICA_X, intention_ICA_y = load_intention_ICA_reduced()
+    intention_pca_datafile = get_datafile_path('intention','pca')
+    intention_ica_datafile = get_datafile_path('intention','ica')
+    intention_rp_datafile = get_datafile_path('intention','rp')
+    intention_lle_datafile = get_datafile_path('intention','lle')
+    pulsar_pca_datafile = get_datafile_path('pulsar','pca')
+    pulsar_ica_datafile = get_datafile_path('pulsar','ica')
+    pulsar_rp_datafile = get_datafile_path('pulsar','rp')
+    pulsar_lle_datafile = get_datafile_path('pulsar','lle')
+
+    save_clustering_plots(intention_pca_datafile, 'intention_pca', plot_dir)
+    save_clustering_plots(intention_ica_datafile, 'intention_ica', plot_dir)
+    save_clustering_plots(intention_rp_datafile, 'intention_rp', plot_dir)
+    save_clustering_plots(intention_lle_datafile, 'intention_lle', plot_dir)
+
+    save_clustering_plots(pulsar_pca_datafile, 'pulsar_pca', plot_dir)
+    save_clustering_plots(pulsar_ica_datafile, 'pulsar_ica', plot_dir)
+    save_clustering_plots(pulsar_rp_datafile, 'pulsar_rp', plot_dir)
+    save_clustering_plots(pulsar_lle_datafile, 'pulsar_lle', plot_dir)
 
 
-# pulsar_RP_X, pulsar_RP_y = load_pulsar_RP_reduced()
-# intention_RP_X, intention_RP_y = load_intention_RP_reduced()
+    print('Intention pca results')
+    print_evaluation_stats(intention_pca_datafile)
+    print()
 
-# pulsar_LLE_X, pulsar_LLE_y = load_pulsar_LLE_reduced()
-# intention_LLE_X, intention_LLE_y = load_intention_LLE_reduced()
+    print('Intention ica results')
+    print_evaluation_stats(intention_ica_datafile, kmeans_clusters=3)
+    print()
 
-# datafile = os.path.join(data_folder, "intention_pca_clustering.json")
+    print('Intention rp results')
+    print_evaluation_stats(intention_rp_datafile)
+    print()
 
-# print_clustering_stats(intention_LLE_X, intention_LLE_y)
+    print('Intention lle results')
+    print_evaluation_stats(intention_lle_datafile)
+    print()
+
+    print('pulsar pca results')
+    print_evaluation_stats(pulsar_pca_datafile)
+    print()
+
+    print('pulsar ica results')
+    print_evaluation_stats(pulsar_ica_datafile)
+    print()
+
+    print('pulsar rp results')
+    print_evaluation_stats(pulsar_rp_datafile)
+    print()
+
+    print('pulsar lle results')
+    print_evaluation_stats(pulsar_lle_datafile)
+    print()
+
+
+    pulsar_PCA_X, pulsar_PCA_y = load_pulsar_PCA_reduced()
+    intention_PCA_X, intention_PCA_y = load_intention_PCA_reduced()
+
+    pulsar_ICA_X, pulsar_ICA_y = load_pulsar_ICA_reduced()
+    intention_ICA_X, intention_ICA_y = load_intention_ICA_reduced()
+
+
+    pulsar_RP_X, pulsar_RP_y = load_pulsar_RP_reduced()
+    intention_RP_X, intention_RP_y = load_intention_RP_reduced()
+
+    pulsar_LLE_X, pulsar_LLE_y = load_pulsar_LLE_reduced()
+    intention_LLE_X, intention_LLE_y = load_intention_LLE_reduced()
+
+    datafile = os.path.join(data_folder, "intention_pca_clustering.json")
+
+    print_clustering_stats(intention_LLE_X, intention_LLE_y)
+
+if __name__ == "__main__":
+    main()
